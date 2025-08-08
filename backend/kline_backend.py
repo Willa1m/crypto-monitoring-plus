@@ -7,6 +7,7 @@ import glob
 import logging
 from datetime import datetime, timedelta
 from crypto_db import CryptoDatabase
+from timestamp_manager import get_timestamp_manager, get_unified_timestamp, get_unified_datetime, get_unified_iso
 
 class KlineBackend:
     """K线数据后端处理类 - 只从数据库获取真实数据"""
@@ -14,6 +15,7 @@ class KlineBackend:
     def __init__(self):
         self.logger = logging.getLogger(__name__)
         self.db = CryptoDatabase()
+        self.timestamp_manager = get_timestamp_manager()
     
     def get_database_kline_data(self, symbol, timeframe, limit=100):
         """从数据库获取K线数据"""
@@ -32,16 +34,13 @@ class KlineBackend:
             kline_data = []
             for item in data:
                 symbol_db, date, open_price, high_price, low_price, close_price, volume = item
-                # 转换日期为时间戳（毫秒）
-                if hasattr(date, 'timestamp'):
-                    timestamp = int(date.timestamp() * 1000)
-                else:
-                    # 如果是字符串，尝试解析
-                    try:
-                        dt = pd.to_datetime(date)
-                        timestamp = int(dt.timestamp() * 1000)
-                    except:
-                        timestamp = int(datetime.now().timestamp() * 1000)
+                # 使用统一的时间戳管理器转换日期为时间戳（毫秒）
+                try:
+                    unified_date = self.timestamp_manager.ensure_utc(date)
+                    timestamp = self.timestamp_manager.to_timestamp(unified_date)
+                except Exception as e:
+                    self.logger.warning(f"时间戳转换失败，使用当前时间: {e}")
+                    timestamp = get_unified_timestamp()
                 
                 kline_data.append([
                     timestamp,
@@ -63,7 +62,6 @@ class KlineBackend:
             return []
         finally:
             self.db.disconnect()
-    
     def calculate_ma(self, data, period):
         """计算移动平均线"""
         close_prices = [d[4] for d in data]
@@ -238,15 +236,25 @@ class KlineBackend:
                     for item in file_data.get('kline_data', []):
                         if isinstance(item, dict):
                             # 如果是字典格式，转换为数组格式
-                            timestamp = int(pd.to_datetime(item['date']).timestamp() * 1000)
-                            kline_data.append([
-                                timestamp,
-                                item['open'],
-                                item['high'],
-                                item['low'],
-                                item['close'],
-                                item.get('volume', 0)
-                            ])
+                            try:
+                                # 使用统一的时间戳管理器处理时间戳
+                                if 'timestamp_ms' in item:
+                                    timestamp = item['timestamp_ms']
+                                else:
+                                    unified_date = self.timestamp_manager.parse_datetime(item['date'])
+                                    timestamp = self.timestamp_manager.to_timestamp(unified_date)
+                                
+                                kline_data.append([
+                                    timestamp,
+                                    item['open'],
+                                    item['high'],
+                                    item['low'],
+                                    item['close'],
+                                    item.get('volume', 0)
+                                ])
+                            except Exception as e:
+                                self.logger.warning(f"处理文件数据时间戳失败: {e}")
+                                continue
                         else:
                             # 如果已经是数组格式，直接使用
                             kline_data.append(item)
@@ -258,7 +266,6 @@ class KlineBackend:
                         'indicators': {},
                         'error': f'没有找到{symbol}的{timeframe}级数据'
                     }
-            
             # 如果没有数据，返回空结果
             if not kline_data:
                 self.logger.error(f"无法获取{symbol}的{timeframe}数据")

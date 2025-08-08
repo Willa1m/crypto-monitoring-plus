@@ -1,7 +1,9 @@
+import logging
 import mysql.connector
 from mysql.connector import pooling
-import logging
+import os
 from datetime import datetime
+from timestamp_manager import get_timestamp_manager
 import pandas as pd
 import time
 import os
@@ -35,6 +37,7 @@ class CryptoDatabase:
         self.connection_pool = None
         self.connection = None
         self.cursor = None
+        self.timestamp_manager = get_timestamp_manager()
         
         # 初始化连接池
         self._init_connection_pool()
@@ -507,12 +510,15 @@ class CryptoDatabase:
         result = self.execute_query(query, (symbol,), fetch=True)
         if result and len(result) > 0:
             row = result[0]
+            # 使用统一的时间戳管理器处理时间戳
+            unified_timestamp = self.timestamp_manager.ensure_utc(row[4]) if row[4] else None
             return {
                 'name': row[0],
                 'symbol': row[1],
                 'price': float(row[2]),
                 'change_24h': float(row[3]) if row[3] else 0,
-                'timestamp': row[4].isoformat() if row[4] else None
+                'timestamp': self.timestamp_manager.to_iso(unified_timestamp) if unified_timestamp else None,
+                'timestamp_ms': self.timestamp_manager.to_timestamp(unified_timestamp) if unified_timestamp else None
             }
         return None
     
@@ -540,8 +546,11 @@ class CryptoDatabase:
         if result:
             chart_data = []
             for row in result:
+                # 使用统一的时间戳管理器处理时间戳
+                unified_date = self.timestamp_manager.ensure_utc(row[0]) if row[0] else None
                 chart_data.append({
-                    'date': row[0].isoformat() if row[0] else None,
+                    'date': self.timestamp_manager.to_iso(unified_date) if unified_date else None,
+                    'timestamp_ms': self.timestamp_manager.to_timestamp(unified_date) if unified_date else None,
                     'open': float(row[1]),
                     'high': float(row[2]),
                     'low': float(row[3]),
@@ -579,8 +588,11 @@ class CryptoDatabase:
         if result:
             history = []
             for row in result:
+                # 使用统一的时间戳管理器处理时间戳
+                unified_date = self.timestamp_manager.ensure_utc(row[0]) if row[0] else None
                 history.append({
-                    'date': row[0].isoformat() if row[0] else None,
+                    'date': self.timestamp_manager.to_iso(unified_date) if unified_date else None,
+                    'timestamp_ms': self.timestamp_manager.to_timestamp(unified_date) if unified_date else None,
                     'price': float(row[1])
                 })
             return history
@@ -600,8 +612,11 @@ class CryptoDatabase:
         if result:
             kline_data = []
             for row in result:
+                # 使用统一的时间戳管理器处理时间戳
+                unified_date = self.timestamp_manager.ensure_utc(row[0]) if row[0] else None
                 kline_data.append({
-                    'date': row[0].isoformat() if row[0] else None,
+                    'date': self.timestamp_manager.to_iso(unified_date) if unified_date else None,
+                    'timestamp_ms': self.timestamp_manager.to_timestamp(unified_date) if unified_date else None,
                     'open': float(row[1]),
                     'high': float(row[2]),
                     'low': float(row[3]),

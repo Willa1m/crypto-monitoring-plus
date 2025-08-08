@@ -8,6 +8,7 @@ import logging
 from crypto_scraper import scrape_realtime_crypto_data
 from crypto_db import CryptoDatabase
 from simple_redis_manager import get_cache_manager
+from timestamp_manager import get_timestamp_manager
 from datetime import datetime
 import time
 
@@ -25,6 +26,7 @@ class RealtimeDataProcessor:
     def __init__(self):
         self.db = CryptoDatabase()
         self.cache_manager = get_cache_manager()
+        self.timestamp_manager = get_timestamp_manager()
     
     def process_and_store_realtime_data(self):
         """处理并存储实时数据"""
@@ -47,17 +49,25 @@ class RealtimeDataProcessor:
             # 存储实时价格数据到数据库
             logging.info("开始存储实时价格数据到数据库")
             for data in realtime_data:
-                success = self.db.insert_current_price(
-                    symbol=data['symbol'],
-                    price=data['price'],
-                    change_24h=data['change_24h'],
-                    timestamp=data['timestamp']
-                )
+                # 检查数据质量
+                quality_score = self.timestamp_manager.get_data_quality_score(data['timestamp'], 'minute')
+                self.timestamp_manager.log_data_status(data['timestamp'], 'minute')
                 
-                if success:
-                    logging.info(f"实时数据存储成功: {data['symbol']} - ${data['price']:,.2f}")
+                # 只存储质量分数大于0.5的数据
+                if quality_score >= 0.5:
+                    success = self.db.insert_current_price(
+                        symbol=data['symbol'],
+                        price=data['price'],
+                        change_24h=data['change_24h'],
+                        timestamp=data['timestamp']
+                    )
+                    
+                    if success:
+                        logging.info(f"实时数据存储成功: {data['symbol']} - ${data['price']:,.2f} (质量分数: {quality_score:.2f})")
+                    else:
+                        logging.error(f"实时数据存储失败: {data['symbol']}")
                 else:
-                    logging.error(f"实时数据存储失败: {data['symbol']}")
+                    logging.warning(f"数据质量过低，跳过存储: {data['symbol']} (质量分数: {quality_score:.2f})")
             
             # 缓存实时数据到Redis
             logging.info("开始缓存实时数据到Redis")

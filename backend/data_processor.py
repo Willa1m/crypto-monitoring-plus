@@ -1,7 +1,9 @@
 import logging
 from crypto_scraper import scrape_all_crypto_data
 from crypto_db import CryptoDatabase
-from datetime import datetime
+from timestamp_manager import get_timestamp_manager
+from datetime import datetime, timedelta
+import pandas as pd
 import time
 
 # 配置日志
@@ -17,6 +19,7 @@ logging.basicConfig(
 class DataProcessor:
     def __init__(self):
         self.db = CryptoDatabase()
+        self.timestamp_manager = get_timestamp_manager()
     
     def process_and_store_data(self):
         """处理并存储抓取的数据"""
