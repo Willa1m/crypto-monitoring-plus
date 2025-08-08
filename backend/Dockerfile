@@ -49,9 +49,13 @@ RUN mkdir -p data/kline_data logs
 # 暴露端口
 EXPOSE 8000
 
+# 复制启动脚本
+COPY startup.sh /app/startup.sh
+RUN chmod +x /app/startup.sh
+
 # 健康检查
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/api/health || exit 1
+    CMD curl -f http://localhost:8000/ || exit 1
 
-# 启动命令 - 使用crypto_web_app.py启动完整的Web应用
-CMD ["python", "crypto_web_app.py"]
+# 启动命令 - 使用启动脚本同时启动Web服务器和调度器
+CMD ["/app/startup.sh"]
