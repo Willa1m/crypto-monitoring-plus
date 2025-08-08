@@ -21,61 +21,7 @@ wheels/
 *.egg
 MANIFEST
 
-# PyInstaller
-*.manifest
-*.spec
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-.hypothesis/
-.pytest_cache/
-
-# Translations
-*.mo
-*.pot
-
-# Django stuff:
-*.log
-local_settings.py
-db.sqlite3
-
-# Flask stuff:
-instance/
-.webassets-cache
-
-# Scrapy stuff:
-.scrapy
-
-# Sphinx documentation
-docs/_build/
-
-# PyBuilder
-target/
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# pyenv
-.python-version
-
-# celery beat schedule file
-celerybeat-schedule
-
-# SageMath parsed files
-*.sage.py
-
-# Environments
+# Virtual Environment
 .env
 .venv
 env/
@@ -84,27 +30,29 @@ ENV/
 env.bak/
 venv.bak/
 
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Cache
+.cache/
+*.cache
+
+# Docker
+.dockerignore
 
 # OS
 .DS_Store
@@ -115,54 +63,18 @@ dmypy.json
 ehthumbs.db
 Thumbs.db
 
-# Docker
-.dockerignore
-
-# Logs
-*.log
-logs/
-
-# Data files
-data/
-*.db
-*.sqlite
-*.sqlite3
-
-# Temporary files
-tmp/
-temp/
-*.tmp
-
-# Redis dump
-dump.rdb
-
-# MySQL
-*.sql
-
-# SSL certificates
-*.pem
-*.key
-*.crt
+# Project specific
+data/kline_data/*.json
+download/
+backend/__pycache__/
+static/charts/*.png
+static/charts/*.json
+backend/data/
+crypto_*.log
+start_services.log
+realtime_processor.log
+kline_processor.log
+data_processor.log
 
 # Backup files
 *.backup
-*.bak
-
-# Node modules (if any)
-node_modules/
-
-# Environment variables
-.env.local
-.env.development
-.env.test
-.env.production
-
-# Docker volumes
-mysql_data/
-redis_data/
-
-# Kubernetes secrets
-k8s/secrets/
-
-# Download directory
-download/
