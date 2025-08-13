@@ -182,6 +182,9 @@ function displayBitcoinPrice(data) {
         
         // 存储当前价格
         previousBtcPrice = currentPrice;
+        
+        // 更新最后更新时间，使用API返回的时间戳
+        updateLastUpdated(btcData.timestamp);
     } else {
         btcPriceElement.innerHTML = '<div class="error-message">未找到比特币价格数据</div>';
     }
@@ -763,11 +766,18 @@ function getDisplayFormats() {
 }
 
 // 更新最后更新时间
-function updateLastUpdated() {
+function updateLastUpdated(timestamp = null) {
     const lastUpdate = document.getElementById('lastUpdate');
     if (lastUpdate) {
-        const now = new Date();
-        lastUpdate.textContent = now.toLocaleTimeString();
+        if (timestamp) {
+            // 使用API返回的时间戳
+            const date = new Date(timestamp);
+            lastUpdate.textContent = date.toLocaleString('zh-CN');
+        } else {
+            // 如果没有提供时间戳，使用当前时间
+            const now = new Date();
+            lastUpdate.textContent = now.toLocaleTimeString();
+        }
     }
 }
 

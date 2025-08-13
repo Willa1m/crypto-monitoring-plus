@@ -333,10 +333,12 @@ class CryptoApp {
             }
         });
 
-        // 更新最后更新时间
-        const lastUpdateElement = document.getElementById('lastUpdate');
-        if (lastUpdateElement) {
-            lastUpdateElement.textContent = new Date().toLocaleTimeString();
+        // 更新最后更新时间，使用第一条数据的时间戳
+        const firstItem = data[0];
+        if (firstItem && firstItem.timestamp) {
+            this.updateLastUpdateTime(firstItem.timestamp);
+        } else {
+            this.updateLastUpdateTime();
         }
     }
 
@@ -449,6 +451,24 @@ class CryptoApp {
         } catch (error) {
             console.error('改变加密货币失败:', error);
             this.errorHandler.showError('改变加密货币失败');
+        }
+    }
+
+    /**
+     * 更新最后更新时间
+     * @param {string} timestamp - 时间戳
+     */
+    updateLastUpdateTime(timestamp = null) {
+        const lastUpdateElement = document.getElementById('lastUpdate');
+        if (lastUpdateElement) {
+            if (timestamp) {
+                // 使用API返回的时间戳
+                const date = new Date(timestamp);
+                lastUpdateElement.textContent = date.toLocaleString('zh-CN');
+            } else {
+                // 如果没有提供时间戳，使用当前时间
+                lastUpdateElement.textContent = new Date().toLocaleTimeString();
+            }
         }
     }
 
