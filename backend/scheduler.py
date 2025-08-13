@@ -38,10 +38,10 @@ class CryptoScheduler:
         """设置定时任务"""
         logging.info("设置定时任务")
         
-        # 数据收集任务 - 每1分钟执行一次（优化频率）
+        # 数据收集任务 - 每5分钟执行一次（优化频率）
         schedule.every(5).minutes.do(self.run_data_collection_task)
         
-        # 实时数据处理任务 - 每15秒执行一次（优化频率）
+        # 实时数据处理任务 - 每30秒执行一次（优化频率）
         schedule.every(30).seconds.do(self.run_realtime_task)
         
         # 每小时运行一次分析

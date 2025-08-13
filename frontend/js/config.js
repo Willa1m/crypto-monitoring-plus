@@ -1,6 +1,6 @@
 // API 配置
 const API_CONFIG = {
-    BASE_URL: '',  // 使用相对路径，通过Nginx代理
+    BASE_URL: window.location.protocol + '//' + window.location.hostname + ':8000',  // 直接访问后端端口
     ENDPOINTS: {
         HEALTH: '/health',
         LATEST_PRICES: '/api/latest_prices',

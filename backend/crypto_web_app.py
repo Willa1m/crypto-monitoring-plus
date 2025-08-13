@@ -53,6 +53,9 @@ class CryptoWebApp:
         self.app.route('/api/kline_data')(self.api_kline_data)
         self.app.route('/api/refresh_charts', methods=['POST'])(self.api_refresh_charts)
         
+        # 健康检查API
+        self.app.route('/api/health')(self.api_health)
+        
         # 缓存管理API
         self.app.route('/api/cache/stats')(self.api_cache_stats)
         self.app.route('/api/cache/clear', methods=['POST'])(self.api_clear_cache)
@@ -487,6 +490,42 @@ class CryptoWebApp:
             return jsonify({
                 'success': False,
                 'message': str(e)
+            }), 500
+    
+    def api_health(self):
+        """API: 健康检查"""
+        try:
+            # 检查数据库连接
+            db_status = 'ok'
+            try:
+                connection = self.db.get_connection()
+                if connection:
+                    connection.close()
+            except Exception as e:
+                db_status = f'error: {str(e)}'
+            
+            # 检查Redis连接
+            redis_status = 'ok' if self.redis_manager else 'disabled'
+            if self.redis_manager:
+                try:
+                    self.redis_manager.redis.redis_client.ping()
+                except Exception as e:
+                    redis_status = f'error: {str(e)}'
+            
+            return jsonify({
+                'status': 'healthy',
+                'timestamp': datetime.now().isoformat(),
+                'services': {
+                    'database': db_status,
+                    'redis': redis_status
+                }
+            })
+        except Exception as e:
+            logging.error(f"健康检查失败: {str(e)}")
+            return jsonify({
+                'status': 'unhealthy',
+                'error': str(e),
+                'timestamp': datetime.now().isoformat()
             }), 500
     
     def get_cache_stats(self):

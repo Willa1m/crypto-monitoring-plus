@@ -17,14 +17,13 @@ RUN apt-get update && apt-get install -y \
     python3-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# 安装TA-Lib C库
+# 下载并安装TA-Lib C库（0.4.0，TA-Lib的C核心库版本）
 RUN wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz && \
-    tar -xzf ta-lib-0.4.0-src.tar.gz && \
+    tar -xvzf ta-lib-0.4.0-src.tar.gz && \
     cd ta-lib && \
-    ./configure --prefix=/usr --build=x86_64-unknown-linux-gnu && \
+    ./configure --prefix=/usr && \
     make && \
     make install && \
-    ldconfig && \
     cd .. && \
     rm -rf ta-lib ta-lib-0.4.0-src.tar.gz
 
@@ -40,8 +39,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY ./backend .
 
 # 复制项目根目录的templates和static目录
-COPY ./templates ./templates
-COPY ./static ./static
+COPY ../templates ./templates
+COPY ../static ./static
 
 # 创建必要的目录
 RUN mkdir -p data/kline_data logs
@@ -53,5 +52,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/api/health || exit 1
 
-# 启动命令 - 使用crypto_web_app.py启动完整的Web应用
-CMD ["python", "crypto_web_app.py"]
+# 启动命令 - 同时启动Web应用和调度器
+CMD ["sh", "-c", "python scheduler.py & python crypto_web_app.py"]

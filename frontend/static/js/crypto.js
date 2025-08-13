@@ -77,7 +77,7 @@ let apiUsageInfo = null;
 function loadLatestPrices() {
     setStatus('正在获取最新价格...', 'loading');
 
-    // 使用绝对URL确保请求到正确的端口
+    // 使用绝对URL确保请求到正确的后端端口
     const apiUrl = `${window.location.protocol}//${window.location.hostname}:8000/api/latest_prices`;
     fetch(apiUrl)
         .then(response => {
