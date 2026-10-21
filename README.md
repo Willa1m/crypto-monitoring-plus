@@ -89,6 +89,10 @@ docker-compose.yml
 - Learned to treat the cache as optional: every Redis call has a database fallback, so a cache outage degrades speed, not correctness.
 - Known gaps, as of this README: credentials are still hard-coded in the source and in `docker-compose.yml` and should move to environment variables; generated logs and `__pycache__` files are tracked in Git; there are no automated tests.
 
+---
+
+*Documentation and repository cleanup were done with AI assistance (Claude Code); the project code and results are my own.*
+
 ## 中文说明
 
 这是我 2025 年夏季软件开发实习期间做的 BTC/ETH 行情监控学习原型：在项目负责人指导下，借助 AI 辅助开发完成，不含公司代码或数据。
